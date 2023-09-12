@@ -1,0 +1,10 @@
+folium
+rasterio
+rtree
+geopandas
+geemap
+mapclassify
+contextily
+matplotlib_scalebar
+opencv-python
+scikit-learn==1.0.1
