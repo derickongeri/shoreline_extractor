@@ -25,8 +25,11 @@ from qgis.core import QgsVectorLayer, QgsRasterLayer, QgsProject
 # from matplotlib import rcParams
 
 def auto_extract_shorelines(dlg,layers):
+    dlg.progressBar.setValue(0)
     output_dir = dlg.outputASElineEdit.text()
     nir_band = int(dlg.rasterBandASEComboBox.currentText())
+    bands=dlg.rasterBandASEComboBox.count()
+    print(bands)
     rasterLayer=layers[0]
     # Set date
     start_date = '2016-01-01'
@@ -49,9 +52,9 @@ def auto_extract_shorelines(dlg,layers):
         print('Warning: The image is empty, so shoreline cannot be extracted.')
     else:
         print('Reading Image!')
-    
+    dlg.progressBar.setValue(10)
     rescale_image, transform=shoreline.resampling(image=Image,scale_factor=5)
-
+    dlg.progressBar.setValue(40)
     print(rescale_image)
 
     # Georeference in East Africa
@@ -104,11 +107,11 @@ def auto_extract_shorelines(dlg,layers):
                     "height": rescale_image.shape[1],
                     "width": rescale_image.shape[2],
                     "transform": transform,
-                    "count": 4,
+                    "count": int(bands),
                     "crs": Image.crs
                     }
                     )
-    
+    dlg.progressBar.setValue(50)
     # Write the clip raster
     # output = os.path.join('/media/derick/BRIAN/image_snrgb_2ms_'+file_name+'.tif')
     output = os.path.join(output_dir+'/image_snrgb_2ms_'+file_name+'.tif')
@@ -130,6 +133,7 @@ def auto_extract_shorelines(dlg,layers):
 
     # Apply KMeans clustering
     kmeans = KMeans(n_clusters=2, init='k-means++', max_iter=200, random_state=42)
+    dlg.progressBar.setValue(70)
     Y_KMeans = kmeans.fit(X_KMeans)
     # Assign label
     X_group = X_KMeans.copy()
@@ -163,7 +167,7 @@ def auto_extract_shorelines(dlg,layers):
     else:
         mask = np.where(n_array==1.0, 255, n_array)
         mask = np.where(np.isnan(mask), 0, mask)
-
+    dlg.progressBar.setValue(80)
     # ------ Save result as GeoJSON file ------ #
     # Export result
     polygons = (
@@ -181,7 +185,7 @@ def auto_extract_shorelines(dlg,layers):
 
     # Remove no-data geometries
     geom = geom[geom.raster_val != 0]
-
+    dlg.progressBar.setValue(90)
     # Extract  boundaries
     list_poly = []
     for p in geom['geometry']:
@@ -221,10 +225,11 @@ def auto_extract_shorelines(dlg,layers):
         print("The resampled image is invalid")
 
     shoreline_output=QgsVectorLayer(outfp,'Extracted Shoreline','ogr')
-    if shoreline_output.isValid():         project.addMapLayer(shoreline_output)
+    if shoreline_output.isValid():         
+        project.addMapLayer(shoreline_output)
     else:
         print("Could not open the vector layer")
-    
+    dlg.progressBar.setValue(100)
     # #Refresh the map canvas to see the newly added layers
     # iface.mapCanvas().refreshAllLayers()
 

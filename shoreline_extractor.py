@@ -65,7 +65,7 @@ class AutomaticShorelineExtraction:
             QCoreApplication.installTranslator(self.translator)
 
         # Call the function to install packages when the plugin is loaded
-        self.install_required_packages()
+        # self.install_required_packages()
 
         # Declare instance attributes
         self.actions = []
@@ -135,7 +135,7 @@ class AutomaticShorelineExtraction:
 
         :param text: Text that should be shown in menu items for this action.
         :type text: str
-QgsProject.instance().layerWillBeRemoved.connect(self.getLayers())
+        QgsProject.instance().layerWillBeRemoved.connect(self.getLayers())
             QgsProject.instance().layerLoaded.connect(self.getLayers())
         
         :param callback: Function to be called when the action is triggered.
