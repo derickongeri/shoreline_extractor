@@ -17,6 +17,6 @@ import warnings
 warnings.filterwarnings("ignore")
 
 def shoreline_analysis(dlg):
-    shoreline_fp_1=
+    shoreline_fp_1 = 
     shl_past = gpd.read_file(shoreline_fp[0]).dropna().reset_index(drop=True)
     shl_present = gpd.read_file(shoreline_fp[-1]).dropna().reset_index(drop=True)

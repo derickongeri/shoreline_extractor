@@ -222,7 +222,7 @@ class AutomaticShorelineExtraction:
         if current_tab_name == "Automatic Shoreline Extraction":
             print('tab 1')
             auto_extract_shorelines(self.dlg,self.getLayers())
-        else:
+        elif current_tab_name == "Shoreline Change":
             print('tab 2')
     def getBandCount(self):
         rasterlayerName=self.dlg.inputRasterASECombobox.currentText()
@@ -239,9 +239,19 @@ class AutomaticShorelineExtraction:
         # Fetch the currently loaded layers
         layers = QgsProject.instance().mapLayers().values()
         # Get only raster layers
-        raster_layers = [layer for layer in layers if layer.type() == QgsMapLayerType.RasterLayer and layer.dataProvider().name()=='gdal']
-        self.dlg.inputRasterASECombobox.addItems([layer.name() for layer in raster_layers])
-        return raster_layers
+        current_tab_name = self.dlg.shorelineChange.tabText(self.dlg.shorelineChange.currentIndex())
+        if current_tab_name == "Automatic Shoreline Extraction":
+            raster_layers = [layer for layer in layers if layer.type() == QgsMapLayerType.RasterLayer and layer.dataProvider().name()=='gdal']
+            self.dlg.inputRasterASECombobox.addItems([layer.name() for layer in raster_layers])
+        elif current_tab_name == "Shoreline Change":
+            # Get a list of all loaded layers in the QGIS project
+            layers = QgsProject.instance().mapLayers().values()
+
+            # Filter the layers to only include GeoJSON vector layers
+            geojson_layers = [layer for layer in layers if layer.type() == QgsMapLayerType.VectorLayer and layer.dataProvider().name()=='ogr']
+            self.dlg.baselineShorelineComboBox.addItems([layer.name() for layer in geojson_layers])
+            self.dlg.comparisonShorelineComboBox.addItems([layer.name() for layer in geojson_layers])
+        # return raster_layers
     
     def select_output_folder(self):
         output_dir_name = QFileDialog.getExistingDirectory(None, "Select a directory", "")
@@ -260,6 +270,7 @@ class AutomaticShorelineExtraction:
             self.dlg.button_box.accepted.connect(self.process)
             self.dlg.browseOutputFolder.clicked.connect(self.select_output_folder)
             self.dlg.inputRasterASECombobox.currentIndexChanged.connect(lambda: self.getBandCount())
+            self.dlg.shorelineChange.currentChanged.connect(self.getLayers)
             # QgsProject.instance().layerWillBeRemoved.connect(self.getLayers)
             QgsProject.instance().layerLoaded.connect(self.getLayers)
         

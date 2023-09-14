@@ -63,7 +63,7 @@
       </rect>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">
@@ -244,7 +244,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string> Comparison Shoreline</string>
+           <string>Comparison Shoreline</string>
           </property>
          </widget>
         </item>
@@ -258,7 +258,7 @@
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>30</width>
+            <width>34</width>
             <height>20</height>
            </size>
           </property>
@@ -317,7 +317,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>200</y>
+         <y>210</y>
          <width>601</width>
          <height>41</height>
         </rect>
@@ -355,7 +355,7 @@
        <property name="geometry">
         <rect>
          <x>620</x>
-         <y>200</y>
+         <y>210</y>
          <width>31</width>
          <height>41</height>
         </rect>
