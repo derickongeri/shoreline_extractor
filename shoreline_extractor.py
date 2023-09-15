@@ -262,8 +262,13 @@ class AutomaticShorelineExtraction:
         self.dlg.outputASElineEdit.setText(output_dir_name)
 
     def browseOutputClicked(self):
-        output_dir_name = QFileDialog.getExistingDirectory(None, "Select a directory", "")
-        self.dlg.outputSClineEdit.setText(output_dir_name)
+        # output_dir_name = QFileDialog.getExistingDirectory(None, "Select a directory", "")
+        # self.dlg.outputSClineEdit.setText(output_dir_name)
+        options = QFileDialog.Options()
+        file_path, _ = QFileDialog.getSaveFileName(self.dlg, "Shoreline Change Output", "", "geojson (*.json);;All Files (*)", options=options)
+
+        if file_path:
+            self.dlg.outputSClineEdit.setText(file_path)
     def run(self):
         """Run method that performs all the real work"""
 
@@ -281,10 +286,13 @@ class AutomaticShorelineExtraction:
             # QgsProject.instance().layerWillBeRemoved.connect(self.getLayers)
             QgsProject.instance().layerLoaded.connect(self.getLayers)
         
-
+        shorelineChangeType=['growth','retreat']
         # # Clear the contents of the comboBox from previous runs
         self.dlg.inputRasterASECombobox.clear()
         self.dlg.rasterBandASEComboBox.clear()
+        self.dlg.changeTypeComboBox.clear()
+        self.dlg.changeTypeComboBox.addItems([item for item in shorelineChangeType])
+
         self.getLayers()
         
         # self.dlg.inputBaselineRastercomboBox.clear()
