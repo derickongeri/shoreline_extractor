@@ -8,3 +8,4 @@ contextily
 matplotlib_scalebar
 opencv-python
 scikit-learn==1.0.1
+pandas
