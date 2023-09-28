@@ -32,8 +32,8 @@ def auto_extract_shorelines(dlg,layers):
     print(bands)
     rasterLayer=layers[0]
     # Set date
-    start_date = '2016-01-01'
-    end_date = '2016-12-31'
+    start_date = '2015-01-01'
+    end_date = '2015-12-31'
 
     # Create filename
     start_yyyy = start_date[:4]

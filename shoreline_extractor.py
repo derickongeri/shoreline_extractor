@@ -34,6 +34,7 @@ from .resources import *
 from .shoreline_extractor_dialog import AutomaticShorelineExtractionDialog
 import os.path
 from .shoreline_extraction import auto_extract_shorelines
+from .shoreline_change import shoreline_analysis
 import sys
 import subprocess
 
@@ -222,8 +223,8 @@ class AutomaticShorelineExtraction:
         if current_tab_name == "Automatic Shoreline Extraction":
             print('tab 1')
             auto_extract_shorelines(self.dlg,self.getLayers())
-        else:
-            print('tab 2')
+        elif current_tab_name == "Shoreline Change":
+            shoreline_analysis(self.dlg)
     def getBandCount(self):
         rasterlayerName=self.dlg.inputRasterASECombobox.currentText()
         layers=QgsProject.instance().mapLayersByName(rasterlayerName)
@@ -239,15 +240,35 @@ class AutomaticShorelineExtraction:
         # Fetch the currently loaded layers
         layers = QgsProject.instance().mapLayers().values()
         # Get only raster layers
-        raster_layers = [layer for layer in layers if layer.type() == QgsMapLayerType.RasterLayer and layer.dataProvider().name()=='gdal']
-        self.dlg.inputRasterASECombobox.addItems([layer.name() for layer in raster_layers])
-        return raster_layers
+        current_tab_name = self.dlg.shorelineChange.tabText(self.dlg.shorelineChange.currentIndex())
+        layer_list=""
+        if current_tab_name == "Automatic Shoreline Extraction":
+            raster_layers = [layer for layer in layers if layer.type() == QgsMapLayerType.RasterLayer and layer.dataProvider().name()=='gdal']
+            layer_list=raster_layers
+            self.dlg.inputRasterASECombobox.addItems([layer.name() for layer in raster_layers])
+        elif current_tab_name == "Shoreline Change":
+            # Get a list of all loaded layers in the QGIS project
+            layers = QgsProject.instance().mapLayers().values()
+            
+            # Filter the layers to only include GeoJSON vector layers
+            geojson_layers = [layer for layer in layers if layer.type() == QgsMapLayerType.VectorLayer and layer.dataProvider().name()=='ogr']
+            self.dlg.baselineShorelineComboBox.addItems([layer.name() for layer in geojson_layers])
+            self.dlg.comparisonShorelineComboBox.addItems([layer.name() for layer in geojson_layers])
+            layer_list=geojson_layers
+        return layer_list
     
     def select_output_folder(self):
         output_dir_name = QFileDialog.getExistingDirectory(None, "Select a directory", "")
         self.dlg.outputASElineEdit.setText(output_dir_name)
 
-    
+    def browseOutputClicked(self):
+        output_dir_name = QFileDialog.getExistingDirectory(None, "Select a directory", "")
+        self.dlg.outputSClineEdit.setText(output_dir_name)
+        # options = QFileDialog.Options()
+        # file_path, _ = QFileDialog.getSaveFileName(self.dlg, "Shoreline Change Output", "", "geojson (*.json);;All Files (*)", options=options)
+
+        # if file_path:
+        #     self.dlg.outputSClineEdit.setText(file_path)
     def run(self):
         """Run method that performs all the real work"""
 
@@ -260,13 +281,18 @@ class AutomaticShorelineExtraction:
             self.dlg.button_box.accepted.connect(self.process)
             self.dlg.browseOutputFolder.clicked.connect(self.select_output_folder)
             self.dlg.inputRasterASECombobox.currentIndexChanged.connect(lambda: self.getBandCount())
+            self.dlg.shorelineChange.currentChanged.connect(self.getLayers)
+            # self.dlg.openFolder_2.clicked.connect(self.browseOutputClicked)
             # QgsProject.instance().layerWillBeRemoved.connect(self.getLayers)
             QgsProject.instance().layerLoaded.connect(self.getLayers)
         
-
+        shorelineChangeType=['growth','retreat']
         # # Clear the contents of the comboBox from previous runs
         self.dlg.inputRasterASECombobox.clear()
         self.dlg.rasterBandASEComboBox.clear()
+        # self.dlg.changeTypeComboBox.clear()
+        # self.dlg.changeTypeComboBox.addItems([item for item in shorelineChangeType])
+
         self.getLayers()
         
         # self.dlg.inputBaselineRastercomboBox.clear()
