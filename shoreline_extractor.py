@@ -35,6 +35,7 @@ from .shoreline_extractor_dialog import AutomaticShorelineExtractionDialog
 import os.path
 from .shoreline_extraction import auto_extract_shorelines
 from .shoreline_change import shoreline_analysis
+from .imagedownloader import download_image
 import sys
 import subprocess
 
@@ -215,16 +216,36 @@ class AutomaticShorelineExtraction:
                 action)
             self.iface.removeToolBarIcon(action)
 
+    """
+        Get the active tabs
+        for selection of processes to run
+    """
+    def get_active_tab(self):
+        major_tab_name=self.dlg.shorelineExtractionWidget.tabText(self.dlg.shorelineExtractionWidget.currentIndex())
+        if major_tab_name == "Image Downloader":
+            return major_tab_name
+        elif major_tab_name == "Extract Shoreline":
+            current_tab_name=self.dlg.shorelineChange.tabText(self.dlg.shorelineChange.currentIndex())
+            return current_tab_name
+
+    ## function to run the processes
     def process(self):
         #check the current tab
-        current_tab_name = self.dlg.shorelineChange.tabText(self.dlg.shorelineChange.currentIndex())
-        print(current_tab_name)
 
-        if current_tab_name == "Automatic Shoreline Extraction":
-            print('tab 1')
-            auto_extract_shorelines(self.dlg,self.getLayers())
-        elif current_tab_name == "Shoreline Change":
-            shoreline_analysis(self.dlg)
+        major_tab_name=self.dlg.shorelineExtractionWidget.tabText(self.dlg.shorelineExtractionWidget.currentIndex())
+
+        if major_tab_name == "Image Downloader":
+            print(major_tab_name)
+            download_image(self.dlg)
+
+        elif major_tab_name == "Extract Shoreline":
+            current_tab_name = self.dlg.shorelineChange.tabText(self.dlg.shorelineChange.currentIndex())
+            if current_tab_name == "Automatic Shoreline Extraction":
+                print('tab 1')
+                auto_extract_shorelines(self.dlg,self.getLayers())
+            elif current_tab_name == "Shoreline Change":
+                shoreline_analysis(self.dlg)
+
     def getBandCount(self):
         rasterlayerName=self.dlg.inputRasterASECombobox.currentText()
         layers=QgsProject.instance().mapLayersByName(rasterlayerName)
@@ -236,34 +257,49 @@ class AutomaticShorelineExtraction:
             self.dlg.rasterBandASEComboBox.addItems([str(num) for num in range(1,num_bands+1)])
 
             return num_bands
+
     def getLayers(self):
         # Fetch the currently loaded layers
         layers = QgsProject.instance().mapLayers().values()
         # Get only raster layers
+        major_tab_name=self.dlg.shorelineExtractionWidget.tabText(self.dlg.shorelineExtractionWidget.currentIndex())
         current_tab_name = self.dlg.shorelineChange.tabText(self.dlg.shorelineChange.currentIndex())
+
         layer_list=""
-        if current_tab_name == "Automatic Shoreline Extraction":
-            raster_layers = [layer for layer in layers if layer.type() == QgsMapLayerType.RasterLayer and layer.dataProvider().name()=='gdal']
-            layer_list=raster_layers
-            self.dlg.inputRasterASECombobox.addItems([layer.name() for layer in raster_layers])
-        elif current_tab_name == "Shoreline Change":
-            # Get a list of all loaded layers in the QGIS project
-            layers = QgsProject.instance().mapLayers().values()
-            
-            # Filter the layers to only include GeoJSON vector layers
-            geojson_layers = [layer for layer in layers if layer.type() == QgsMapLayerType.VectorLayer and layer.dataProvider().name()=='ogr']
-            self.dlg.baselineShorelineComboBox.addItems([layer.name() for layer in geojson_layers])
-            self.dlg.comparisonShorelineComboBox.addItems([layer.name() for layer in geojson_layers])
-            layer_list=geojson_layers
-        return layer_list
+        if major_tab_name == "Image Downloader":
+            # print(major_tab_name)
+            vector_layers=[layer for layer in layers if layer.type() == QgsMapLayerType.VectorLayer and layer.dataProvider().name()=='ogr']
+            layer_list=vector_layers
+            self.dlg.BoundComboBox.addItems([layer.name() for layer in vector_layers])
+
+        elif major_tab_name == "Extract Shoreline":
+
+            if current_tab_name == "Automatic Shoreline Extraction":
+                raster_layers = [layer for layer in layers if layer.type() == QgsMapLayerType.RasterLayer and layer.dataProvider().name()=='gdal']
+                layer_list=raster_layers
+                self.dlg.inputRasterASECombobox.addItems([layer.name() for layer in raster_layers])
+
+            elif current_tab_name == "Shoreline Change":
+                # Filter the layers to only include GeoJSON vector layers
+                geojson_layers = [layer for layer in layers if layer.type() == QgsMapLayerType.VectorLayer and layer.dataProvider().name()=='ogr']
+                self.dlg.baselineShorelineComboBox.addItems([layer.name() for layer in geojson_layers])
+                self.dlg.comparisonShorelineComboBox.addItems([layer.name() for layer in geojson_layers])
+                layer_list=geojson_layers
+            return layer_list
     
     def select_output_folder(self):
+        active_tab_name=self.get_active_tab()
         output_dir_name = QFileDialog.getExistingDirectory(None, "Select a directory", "")
-        self.dlg.outputASElineEdit.setText(output_dir_name)
+        if active_tab_name == "Image Downloader" and output_dir_name.strip() != "":
+            self.dlg.DownloadOutputLineEdit.setText(output_dir_name)
+        elif active_tab_name == "Automatic Shoreline Extraction" and output_dir_name.strip() != "":
+            self.dlg.outputASElineEdit.setText(output_dir_name)
+        elif active_tab_name == "Shoreline Change" and output_dir_name.strip() != "":
+            self.dlg.outputSClineEdit.setText(output_dir_name)
 
-    def browseOutputClicked(self):
-        output_dir_name = QFileDialog.getExistingDirectory(None, "Select a directory", "")
-        self.dlg.outputSClineEdit.setText(output_dir_name)
+    # def browseOutputClicked(self):
+    #     output_dir_name = QFileDialog.getExistingDirectory(None, "Select a directory", "")
+    #     self.dlg.outputSClineEdit.setText(output_dir_name)
         # options = QFileDialog.Options()
         # file_path, _ = QFileDialog.getSaveFileName(self.dlg, "Shoreline Change Output", "", "geojson (*.json);;All Files (*)", options=options)
 
@@ -282,7 +318,8 @@ class AutomaticShorelineExtraction:
             self.dlg.browseOutputFolder.clicked.connect(self.select_output_folder)
             self.dlg.inputRasterASECombobox.currentIndexChanged.connect(lambda: self.getBandCount())
             self.dlg.shorelineChange.currentChanged.connect(self.getLayers)
-            # self.dlg.openFolder_2.clicked.connect(self.browseOutputClicked)
+            self.dlg.openFolder_2.clicked.connect(self.select_output_folder)
+            self.dlg.browseOutputDownload.clicked.connect(self.select_output_folder)
             # QgsProject.instance().layerWillBeRemoved.connect(self.getLayers)
             QgsProject.instance().layerLoaded.connect(self.getLayers)
         

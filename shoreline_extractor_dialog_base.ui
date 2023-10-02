@@ -48,6 +48,233 @@
     <attribute name="title">
      <string>Image Downloader</string>
     </attribute>
+    <widget class="QWidget" name="horizontalLayoutWidget_10">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>200</y>
+       <width>541</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_10">
+      <item>
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Output Folder:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_8">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>7</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="DownloadOutputLineEdit"/>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="gridLayoutWidget_3">
+     <property name="geometry">
+      <rect>
+       <x>560</x>
+       <y>200</y>
+       <width>31</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="0" column="0">
+       <widget class="QPushButton" name="browseOutputDownload">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="horizontalLayoutWidget_11">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>251</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_11">
+      <item>
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Start Date:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_9">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>34</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QDateEdit" name="DownloadStartDateEdit">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumDate">
+         <date>
+          <year>9999</year>
+          <month>12</month>
+          <day>29</day>
+         </date>
+        </property>
+        <property name="calendarPopup">
+         <bool>true</bool>
+        </property>
+        <property name="currentSectionIndex">
+         <number>0</number>
+        </property>
+        <property name="date">
+         <date>
+          <year>2023</year>
+          <month>9</month>
+          <day>29</day>
+         </date>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="horizontalLayoutWidget_12">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>120</y>
+       <width>221</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_12">
+      <item>
+       <widget class="QLabel" name="label_11">
+        <property name="text">
+         <string>End Date:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_10">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>13</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QDateEdit" name="DownloadEndDateEdit">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="calendarPopup">
+         <bool>true</bool>
+        </property>
+        <property name="date">
+         <date>
+          <year>2023</year>
+          <month>9</month>
+          <day>29</day>
+         </date>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="horizontalLayoutWidget_13">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>581</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_13">
+      <item>
+       <widget class="QLabel" name="label_12">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Bound:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>59</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QComboBox" name="BoundComboBox"/>
+      </item>
+     </layout>
+    </widget>
    </widget>
    <widget class="QWidget" name="ExtractShorelineTab">
     <attribute name="title">
@@ -88,7 +315,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Input Raster</string>
+           <string>Input Raster:</string>
           </property>
          </widget>
         </item>
@@ -102,7 +329,7 @@
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>62</width>
+            <width>60</width>
             <height>20</height>
            </size>
           </property>
@@ -132,7 +359,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Select Band 'NIR'</string>
+           <string>Select Band 'NIR':</string>
           </property>
          </widget>
         </item>
@@ -146,7 +373,7 @@
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>42</width>
+            <width>29</width>
             <height>20</height>
            </size>
           </property>
@@ -170,7 +397,7 @@
         <item>
          <widget class="QLabel" name="label_6">
           <property name="text">
-           <string>Output File</string>
+           <string>Output Folder:</string>
           </property>
          </widget>
         </item>
@@ -184,7 +411,7 @@
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>69</width>
+            <width>47</width>
             <height>20</height>
            </size>
           </property>
@@ -244,7 +471,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Comparison Shoreline</string>
+           <string>Comparison Shoreline:</string>
           </property>
          </widget>
         </item>
@@ -258,7 +485,7 @@
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>34</width>
+            <width>26</width>
             <height>20</height>
            </size>
           </property>
@@ -288,7 +515,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Baseline Shoreline</string>
+           <string>Baseline Shoreline:</string>
           </property>
          </widget>
         </item>
@@ -302,7 +529,7 @@
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>51</width>
+            <width>50</width>
             <height>20</height>
            </size>
           </property>
@@ -326,7 +553,7 @@
         <item>
          <widget class="QLabel" name="label_7">
           <property name="text">
-           <string>Output File</string>
+           <string>Output Folder:</string>
           </property>
          </widget>
         </item>
@@ -340,7 +567,7 @@
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>84</width>
+            <width>78</width>
             <height>20</height>
            </size>
           </property>
