@@ -40,7 +40,7 @@ def auto_extract_shorelines(dlg,layers):
     start_mm = start_date[5:7]
     end_yyyy = end_date[:4]
     end_mm = end_date[5:7]
-    file_name = start_yyyy+start_mm+'_'+end_yyyy+end_mm
+    file_name = dlg.inputRasterASECombobox.currentText()
 
     epsg_code = "3857"    
 
@@ -213,7 +213,8 @@ def auto_extract_shorelines(dlg,layers):
     geo_shoreline['id'] = geo_shoreline.index
 
     # Save to geojson file
-    outfp = output_dir+file_name+'.json'
+    outfp = output_dir+'/'+file_name+'.json'
+    print(outfp)
     geo_shoreline.to_file(outfp, driver='GeoJSON')
 
     #Add the layers on QGIS
