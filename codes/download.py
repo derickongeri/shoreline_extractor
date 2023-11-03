@@ -1,5 +1,4 @@
 import ee
-ee.Initialize()
 import math
 import folium
 from shapely.geometry import Polygon

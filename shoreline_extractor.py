@@ -23,7 +23,7 @@
 """
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QFileDialog
+from qgis.PyQt.QtWidgets import QAction, QFileDialog,QMessageBox
 
 from qgis.core import QgsProject, Qgis, QgsVectorLayer, QgsRasterLayer, QgsMapLayerType, QgsApplication
 from qgis.analysis import QgsNativeAlgorithms
@@ -36,6 +36,7 @@ import os.path
 from .shoreline_extraction import auto_extract_shorelines
 from .shoreline_change import shoreline_analysis
 from .imagedownloader import download_image
+from .SAR_Shoreline_Extractor import extract_SAR_Shoreline
 import sys
 import subprocess
 
@@ -227,7 +228,12 @@ class AutomaticShorelineExtraction:
         elif major_tab_name == "Extract Shoreline":
             current_tab_name=self.dlg.shorelineChange.tabText(self.dlg.shorelineChange.currentIndex())
             return current_tab_name
-
+    def show_error_message(self,message):
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessageBox.Critical)
+        msg_box.setWindowTitle("Error")
+        msg_box.setText(message)
+        msg_box.exec_()
     ## function to run the processes
     def process(self):
         #check the current tab
@@ -236,15 +242,26 @@ class AutomaticShorelineExtraction:
 
         if major_tab_name == "Image Downloader":
             print(major_tab_name)
-            download_image(self.dlg)
+            if self.dlg.DownloadOutputLineEdit.text() =="":
+                self.show_error_message("Provide Output Path")
+            else:
+                download_image(self.dlg)
 
         elif major_tab_name == "Extract Shoreline":
             current_tab_name = self.dlg.shorelineChange.tabText(self.dlg.shorelineChange.currentIndex())
             if current_tab_name == "Automatic Shoreline Extraction":
                 print('tab 1')
-                auto_extract_shorelines(self.dlg,self.getLayers())
+                if self.dlg.outputASElineEdit.text()=="":
+                    self.show_error_message("Provide Output Path")
+                else:
+                    auto_extract_shorelines(self.dlg,self.getLayers())
             elif current_tab_name == "Shoreline Change":
-                shoreline_analysis(self.dlg)
+                if self.dlg.outputSClineEdit.text()=="":
+                    self.show_error_message("Provide Output Path")
+                else:
+                    shoreline_analysis(self.dlg)
+            elif current_tab_name == "Shoreline Extraction (SAR Sentinel-1)":
+                extract_SAR_Shoreline(self.dlg)
 
     def getBandCount(self):
         rasterlayerName=self.dlg.inputRasterASECombobox.currentText()
@@ -271,7 +288,9 @@ class AutomaticShorelineExtraction:
             vector_layers=[layer for layer in layers if layer.type() == QgsMapLayerType.VectorLayer and layer.dataProvider().name()=='ogr']
             layer_list=vector_layers
             self.dlg.BoundComboBox.addItems([layer.name() for layer in vector_layers])
-
+            self.dlg.baselineShorelineComboBox.addItems([layer.name() for layer in vector_layers])
+            self.dlg.comparisonShorelineComboBox.addItems([layer.name() for layer in vector_layers])
+            self.dlg.BoundComboBoxSAR.addItems([layer.name() for layer in vector_layers])
         elif major_tab_name == "Extract Shoreline":
 
             if current_tab_name == "Automatic Shoreline Extraction":
@@ -284,7 +303,15 @@ class AutomaticShorelineExtraction:
                 geojson_layers = [layer for layer in layers if layer.type() == QgsMapLayerType.VectorLayer and layer.dataProvider().name()=='ogr']
                 self.dlg.baselineShorelineComboBox.addItems([layer.name() for layer in geojson_layers])
                 self.dlg.comparisonShorelineComboBox.addItems([layer.name() for layer in geojson_layers])
+                self.dlg.BoundComboBox.addItems([layer.name() for layer in geojson_layers])
+                self.dlg.BoundComboBoxSAR.addItems([layer.name() for layer in geojson_layers])
                 layer_list=geojson_layers
+            elif current_tab_name == "Shoreline Extraction (SAR Sentinel-1)":
+                geojson_layers = [layer for layer in layers if layer.type() == QgsMapLayerType.VectorLayer and layer.dataProvider().name()=='ogr']
+                self.dlg.baselineShorelineComboBox.addItems([layer.name() for layer in geojson_layers])
+                self.dlg.comparisonShorelineComboBox.addItems([layer.name() for layer in geojson_layers])
+                self.dlg.BoundComboBox.addItems([layer.name() for layer in geojson_layers])
+                self.dlg.BoundComboBoxSAR.addItems([layer.name() for layer in geojson_layers])
             return layer_list
     
     def select_output_folder(self):
@@ -296,6 +323,8 @@ class AutomaticShorelineExtraction:
             self.dlg.outputASElineEdit.setText(output_dir_name)
         elif active_tab_name == "Shoreline Change" and output_dir_name.strip() != "":
             self.dlg.outputSClineEdit.setText(output_dir_name)
+        elif active_tab_name == "Shoreline Extraction (SAR Sentinel-1)":
+            self.dlg.DownloadOutputLineEditSAR.setText(output_dir_name)
 
     # def browseOutputClicked(self):
     #     output_dir_name = QFileDialog.getExistingDirectory(None, "Select a directory", "")
@@ -320,6 +349,7 @@ class AutomaticShorelineExtraction:
             self.dlg.shorelineChange.currentChanged.connect(self.getLayers)
             self.dlg.openFolder_2.clicked.connect(self.select_output_folder)
             self.dlg.browseOutputDownload.clicked.connect(self.select_output_folder)
+            self.dlg.browseOutputSAR.clicked.connect(self.select_output_folder)
             # QgsProject.instance().layerWillBeRemoved.connect(self.getLayers)
             QgsProject.instance().layerLoaded.connect(self.getLayers)
         

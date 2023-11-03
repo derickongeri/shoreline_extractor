@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>641</width>
-    <height>566</height>
+    <width>642</width>
+    <height>522</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>10</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>CoGEOS </string>
@@ -17,7 +23,7 @@
    <property name="geometry">
     <rect>
      <x>440</x>
-     <y>520</y>
+     <y>410</y>
      <width>171</width>
      <height>32</height>
     </rect>
@@ -36,9 +42,9 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>100</y>
+     <y>10</y>
      <width>621</width>
-     <height>361</height>
+     <height>331</height>
     </rect>
    </property>
    <property name="currentIndex">
@@ -75,7 +81,7 @@
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>7</width>
+          <width>13</width>
           <height>20</height>
          </size>
         </property>
@@ -138,7 +144,7 @@
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>34</width>
+          <width>33</width>
           <height>20</height>
          </size>
         </property>
@@ -264,7 +270,7 @@
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>59</width>
+          <width>56</width>
           <height>20</height>
          </size>
         </property>
@@ -286,7 +292,7 @@
        <x>0</x>
        <y>0</y>
        <width>611</width>
-       <height>331</height>
+       <height>301</height>
       </rect>
      </property>
      <property name="currentIndex">
@@ -329,7 +335,7 @@
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>60</width>
+            <width>51</width>
             <height>20</height>
            </size>
           </property>
@@ -353,7 +359,7 @@
         <item>
          <widget class="QLabel" name="label_3">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -373,7 +379,7 @@
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>29</width>
+            <width>24</width>
             <height>20</height>
            </size>
           </property>
@@ -411,7 +417,7 @@
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>47</width>
+            <width>43</width>
             <height>20</height>
            </size>
           </property>
@@ -434,6 +440,254 @@
        <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="0">
          <widget class="QPushButton" name="browseOutputFolder">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="tab_4">
+      <attribute name="title">
+       <string>Shoreline Extraction (SAR Sentinel-1)</string>
+      </attribute>
+      <widget class="QWidget" name="horizontalLayoutWidget_14">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>110</y>
+         <width>251</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_14">
+        <item>
+         <widget class="QLabel" name="label_13">
+          <property name="text">
+           <string>Start Date:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_11">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>38</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QDateEdit" name="DownloadStartDateEditSAR">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumDate">
+           <date>
+            <year>9999</year>
+            <month>12</month>
+            <day>29</day>
+           </date>
+          </property>
+          <property name="calendarPopup">
+           <bool>true</bool>
+          </property>
+          <property name="currentSectionIndex">
+           <number>0</number>
+          </property>
+          <property name="date">
+           <date>
+            <year>2023</year>
+            <month>9</month>
+            <day>29</day>
+           </date>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="horizontalLayoutWidget_15">
+       <property name="geometry">
+        <rect>
+         <x>310</x>
+         <y>110</y>
+         <width>251</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_15">
+        <item>
+         <widget class="QLabel" name="label_14">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>End Date</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_12">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>34</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QDateEdit" name="DownloadEndDateEditSAR">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumDate">
+           <date>
+            <year>9999</year>
+            <month>12</month>
+            <day>29</day>
+           </date>
+          </property>
+          <property name="calendarPopup">
+           <bool>true</bool>
+          </property>
+          <property name="currentSectionIndex">
+           <number>0</number>
+          </property>
+          <property name="date">
+           <date>
+            <year>2023</year>
+            <month>9</month>
+            <day>29</day>
+           </date>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="horizontalLayoutWidget_16">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>551</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_16">
+        <item>
+         <widget class="QLabel" name="label_15">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Bound:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_13">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>52</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QComboBox" name="BoundComboBoxSAR"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="horizontalLayoutWidget_17">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>190</y>
+         <width>511</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_17">
+        <item>
+         <widget class="QLabel" name="label_16">
+          <property name="text">
+           <string>Output Folder:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_14">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>18</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="DownloadOutputLineEditSAR"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="gridLayoutWidget_4">
+       <property name="geometry">
+        <rect>
+         <x>530</x>
+         <y>190</y>
+         <width>31</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="0">
+         <widget class="QPushButton" name="browseOutputSAR">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -529,7 +783,7 @@
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>50</width>
+            <width>47</width>
             <height>20</height>
            </size>
           </property>
@@ -567,8 +821,8 @@
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>78</width>
-            <height>20</height>
+            <width>74</width>
+            <height>0</height>
            </size>
           </property>
          </spacer>
@@ -608,7 +862,7 @@
         <rect>
          <x>490</x>
          <y>30</y>
-         <width>101</width>
+         <width>102</width>
          <height>41</height>
         </rect>
        </property>
@@ -630,7 +884,7 @@
         <rect>
          <x>490</x>
          <y>110</y>
-         <width>101</width>
+         <width>102</width>
          <height>41</height>
         </rect>
        </property>
@@ -660,7 +914,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>470</y>
+     <y>350</y>
      <width>601</width>
      <height>41</height>
     </rect>
@@ -681,6 +935,22 @@
      </widget>
     </item>
    </layout>
+  </widget>
+  <widget class="QLabel" name="label_17">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>450</y>
+     <width>591</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="pixmap">
+    <pixmap>../../../../../../../../../Documents/QGIS Plugins/logos.jpg</pixmap>
+   </property>
   </widget>
  </widget>
  <customwidgets>
