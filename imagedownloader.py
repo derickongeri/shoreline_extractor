@@ -25,6 +25,7 @@ def initialize():
     json_file_path = os.path.join(script_directory, json_file)
     service_account = 'brian-python@ee-briansimiyu.iam.gserviceaccount.com'
     credentials = ee.ServiceAccountCredentials(service_account, json_file_path)
+    print(credentials)
     ee.Initialize(credentials)
 
 def download_image(dlg):
@@ -183,7 +184,7 @@ def download_image(dlg):
         dest.write(clip.astype(np.float32))
 
     # Shut down temporary directory
-    shutil.rmtree('./content/temp')
+    # shutil.rmtree('./content/temp')
     
     #---------------------------------------------------------------------
     if img_grid.read().any() == 0:
