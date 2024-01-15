@@ -23,18 +23,31 @@ def Sentinel_no_clouds(aoi, start_date, end_date):
   dataset = img_maskCloud.clip(aoi)
   return dataset
 
+def maths(img):
+   vv_vh = img.select('VV').divide(img.select('VH')).rename('VV/VH')
+   image = img.addBands(vv_vh)
+#    rgbImage = image.visualize({
+#         'bands': ['VV', 'VH', 'VV/VH'], # Assign bands to RGB channels
+#         'min': -25,  # Adjust these values based on your data
+#         'max': 8,
+#         'gamma': 1.4
+#         })
+   return image
+
 def waterMask_download(aoi, aoi_grid, start_date, end_date):
     
     # Import Sentinel-1 and filter the data series
     s1 = (ee.ImageCollection('COPERNICUS/S1_GRD')
-          .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
-           # .filter(ee.Filter.eq('instrumentMode', 'IW'))
+          .filter(ee.Filter.listContains('transmitterReceiverPolarisation', ['VV', 'VH']))
+          .filter(ee.Filter.eq('instrumentMode', 'IW'))
            # .filter(ee.Filter.eq('orbitProperties_pass', 'ASCENDING'))
           .filterBounds(aoi)
           .filterDate(start_date, end_date)
            # .filter(ee.Filter.contains(leftField=".geo", rightValue=aoi))
           .map(lambda image: image.clip(aoi))
-          .map(lambda image: image.addBands(image.select('VV').focal_median(float('50'), 'circle', 'meters').rename('VV_smoothed'))))
+          .map(lambda image: image.addBands(image.select('VH').focal_median(float('50'), 'circle', 'meters').rename('VH_smoothed'))))
+    
+
 
 
     # Define the Otsu function
@@ -65,7 +78,7 @@ def waterMask_download(aoi, aoi_grid, start_date, end_date):
     # Define a function to add a water mask
     def add_water_mask(image):
         # Compute histogram
-        histogram = image.select('VV').reduceRegion(
+        histogram = image.select(['VH']).reduceRegion(
             reducer=ee.Reducer.histogram(255, 2)
             .combine('mean', None, True)
             .combine('variance', None, True),
@@ -74,17 +87,21 @@ def waterMask_download(aoi, aoi_grid, start_date, end_date):
             bestEffort=True)
         
         # Calculate threshold using the Otsu function
-        threshold = otsu(histogram.get('VV_histogram'))
+        threshold = otsu(histogram.get('VH_histogram'))
         
         # Get the water mask
-        water_mask = image.select('VV_smoothed').lt(threshold).rename('waterMask')
+        water_mask = image.select('VH_smoothed').lt(threshold).rename('waterMask') 
         water_mask = water_mask.updateMask(water_mask)  # Remove all pixels equal to 0
-        return image.addBands(water_mask).select("waterMask").clip(aoi).copyProperties(image, ['system:time_start', 'system:time_end'])
+        water_mask = water_mask.unmask(0).eq(1)
+        water_mask = water_mask.remap([0, 1], [1, 0]).rename('waterMask')
+        return image.addBands(water_mask).clip(aoi).copyProperties(image, ['system:time_start', 'system:time_end'])
+    
     
     # Apply the water mask function to the Sentinel-1 ImageCollection
     s1 = s1.map(add_water_mask)
-    
-    s1 = s1.sort('system:time_end',False).first()
-    # s1 = s1.mean()
-    
+    s1=s1.map(maths)
+    # s1 = s1.sort('system:time_end',False).first()
+    s1 = s1.median()    
     return s1
+
+

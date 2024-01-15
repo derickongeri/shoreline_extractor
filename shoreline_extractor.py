@@ -104,7 +104,7 @@ class AutomaticShorelineExtraction:
             try:
                 # Get the path to the bundled requirements.txt file
                 # requirements_file_path = os.path.join(self.plugin_dir, 'requirements.txt')
-
+                
                 #list of packages to install
                 packages_to_install = ['folium', 'rasterio', 'rtree', 'pandas', 'geopandas', 'geemap', 'mapclassify', 'contextily', 'matplotlib_scalebar', 'opencv-python', 'natsort', 'scikit-learn']
 

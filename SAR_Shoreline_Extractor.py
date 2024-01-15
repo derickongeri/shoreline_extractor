@@ -1,27 +1,31 @@
-import os
-import ee
-import glob
-# import shutil
-import requests
-import geemap
-import shutil
-import numpy as np
-# import natsort
-# import folium
-from .Plugin_download import waterMask_download
-import rasterio
-from rasterio.merge import merge
-from rasterio.features import shapes
-from shapely.ops import unary_union
-from .codes import shoreline
-# from rasterio.mask import mask
-from natsort import natsorted
-from pyproj import CRS
-import geopandas as gpd
-# import shapely
-from shapely.geometry import Polygon, MultiPolygon
-from shapely.geometry.polygon import LinearRing
-from qgis.core import QgsProject,QgsVectorLayer,QgsFeature,QgsGeometry,QgsPoint
+from .package_installer import install_packages
+try:
+    import os
+    import ee
+    import glob
+    # import shutil
+    import requests
+    import geemap
+    import shutil
+    import numpy as np
+    # import natsort
+    # import folium
+    from .Plugin_download import waterMask_download, Sentinel_no_clouds
+    import rasterio
+    from rasterio.merge import merge
+    from rasterio.features import shapes
+    from shapely.ops import unary_union
+    from .codes import shoreline
+    # from rasterio.mask import mask
+    from natsort import natsorted
+    from pyproj import CRS
+    import geopandas as gpd
+    # import shapely
+    from shapely.geometry import Polygon, MultiPolygon
+    from shapely.geometry.polygon import LinearRing
+    from qgis.core import QgsProject,QgsVectorLayer,QgsRasterLayer,QgsFeature,QgsGeometry,QgsPoint
+except ImportError:
+    install_packages()
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -47,6 +51,7 @@ def extract_SAR_Shoreline(dlg):
     # Define the working CRS
     epsg_code = "3857"
 
+    #Requires PyCRS
     dlg.progressBar.setValue(10)
     # Load the roi shapefile
     roi = geemap.shp_to_ee(bound.source())
@@ -57,8 +62,7 @@ def extract_SAR_Shoreline(dlg):
 
     # ------ Main Code Execution ------ #
     # Split the geometry to small grid 
-    # grid = geemap.fishnet(roi, h_interval=0.05, v_interval=0.05, delta=1)
-    grid = roi
+    grid = geemap.fishnet(roi, h_interval=0.05, v_interval=0.05, delta=1)
     gridList = grid.toList(grid.size())
     grid_num = grid.toList(grid.size()).length()
 
@@ -72,6 +76,9 @@ def extract_SAR_Shoreline(dlg):
     # Create temporary folder
     if not os.path.exists(output_folder+'/output/Tiles'): 
         os.makedirs(output_folder+'/output/Tiles')
+
+    if not os.path.exists(output_folder+'/output/Tiles_s2'): 
+        os.makedirs(output_folder+'/output/Tiles_s2')
         
     # 2. Define start date and end date
     date = [start_date, end_date]
@@ -87,31 +94,32 @@ def extract_SAR_Shoreline(dlg):
     end_mm = end_date[5:7]
     file_name = start_yyyy+start_mm+'_'+end_yyyy+end_mm
 
+    # Download SAR data
+    #Download image by grid
     #Download image by grid
     for i in range(grid_num.getInfo()):
-        # Extract image from GEE and apply pre-process function
-        image = waterMask_download(roi, ls_feature[i], start_date, end_date)
+  # Extract image from GEE and apply pre-process function
+        image = waterMask_download(roi,ls_feature[i], start_date, end_date)
 
-        BandIDs = ['waterMask']
+        BandIDs = ['VH','waterMask']
         # Download pre-processed image
-        
         download_id = ee.data.getDownloadId({
-            'image': image,
-            'bands': BandIDs,
-            'region': ls_feature[i],
-            'scale': 10,
-            'format': 'GEO_TIFF',
-            'crs' : 'EPSG:'+str(epsg_code),
+        'image': image,
+        'bands': BandIDs,
+        'region': ls_feature[i],
+        'scale': 10,
+        'format': 'GEO_TIFF',
+        'crs' : 'EPSG:'+str(epsg_code),
         })
 
         response = requests.get(ee.data.makeDownloadUrl(download_id))
-        with open(output_folder+'/output/Tiles/image_grid_'+str(i)+'.tif', 'wb') as fd:
+        with open('./output/Tiles/image_grid_'+str(i)+'.tif', 'wb') as fd:
             fd.write(response.content)
     dlg.progressBar.setValue(30)   
         # ------ Merge all grid image to one image ------ #
     # Make a search criteria to select the image files
     q = os.path.join(output_folder+'/output/Tiles/image*.tif') 
-
+    
     # sorted files by name
     fp = natsorted(glob.glob(q)) 
 
@@ -128,7 +136,7 @@ def extract_SAR_Shoreline(dlg):
 
     # Merge function returns a single mosaic array and the transformation info
     mosaic, out_trans = merge(src_files)
-    dlg.progressBar.setValue(40)
+
     # Set metadata
     out_meta = src_files[0].meta.copy()
     out_meta.update({"driver": "GTiff",
@@ -137,13 +145,14 @@ def extract_SAR_Shoreline(dlg):
                     "height": mosaic.shape[1],
                     "width": mosaic.shape[2],
                     "transform": out_trans,
-                    "count": 1,
+                    "count": 2,
                     "crs": CRS.from_epsg(int(epsg_code))})
                     
     # Write the mosaic raster
-    output = os.path.join(output_folder+'/output/WaterMask/pre-processed-images'+'/WaterMask_'+file_name+'.tif')
+    output = os.path.join('./output/WaterMask/pre-processed-images'+'/WaterMask_'+file_name+'.tif')
     with rasterio.open(output, "w", tiled=True, compress='lzw', **out_meta) as dest:
         dest.write(mosaic.astype(np.float32))
+
     dlg.progressBar.setValue(50)   
         # Create folder
     if not os.path.exists(output_folder+'/output/WaterMask/post-processed-images'):
@@ -154,6 +163,7 @@ def extract_SAR_Shoreline(dlg):
     # ------ Shoreline extraction ------ #
     # Read input image data
     Image = rasterio.open(output_folder+'/output/WaterMask/pre-processed-images'+'/WaterMask_'+file_name+'.tif')
+    Image = Image.read(4)
     if Image.read().any() == 0:
         print('Warning: The image is empty, so shoreline cannot be extracted.')
 
@@ -217,7 +227,7 @@ def extract_SAR_Shoreline(dlg):
         
     rescale_image = rasterio.open(output_folder+'/output/WaterMask/post-processed-images/WaterMask_'+file_name+'.tif')
 
-    mask = rescale_image.read(1)
+    mask = rescale_image.read(2)
 
         # ------ Save result as GeoJSON file ------ #
     # Export result
@@ -274,3 +284,10 @@ def extract_SAR_Shoreline(dlg):
 
     # os.rmdir(output_folder+'/output')
     dlg.progressBar.setValue(100)
+    #Disconnect file processing and Shut down temporary directory
+    files=None
+    src_files=None
+    rescale_image=None
+    output=None
+    img_grid=None
+    # shutil.rmtree(f'{output_folder}/output/Tiles')
