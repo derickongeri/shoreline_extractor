@@ -57,39 +57,39 @@ def shoreline_analysis(dlg):
     dlg.progressBar.setValue(20)
     
    
-    retreat = gpd.overlay(shl_past, shl_present, how='difference', keep_geom_type=False)
-    retreat.to_file(outputpath+'/retreat.json', driver='GeoJSON')
-    addMapLayer(outputpath+'/retreat.json')
+    erosion = gpd.overlay(shl_past, shl_present, how='difference', keep_geom_type=False)
+    erosion.to_file(outputpath+'erosion.json', driver='GeoJSON')
+    addMapLayer(outputpath+'/erosion.json')
     
-    growth = gpd.overlay(shl_present, shl_past, how='difference', keep_geom_type=False)
-    growth.to_file(outputpath+'/growth.json', driver='GeoJSON')
-    addMapLayer(outputpath+'/growth.json')
+    accretion = gpd.overlay(shl_present, shl_past, how='difference', keep_geom_type=False)
+    accretion.to_file(outputpath+'/accretion.json', driver='GeoJSON')
+    addMapLayer(outputpath+'/accretion.json')
     # Export growth and retreat geometry to GeoJSON
     
     
 
     # # Create union polygon from geodata of growth area 
-    growth_poly = create_union_polygon(growth)
+    accretion_poly = create_union_polygon(accretion)
 
     # # Create union polygon from geodata of retreat area 
-    retreat_poly = create_union_polygon(retreat)
+    erosion_poly = create_union_polygon(erosion)
 
     # Create shoreline change as points along shoreline
-    growth_shoreline_change = create_shoreline_change_points(shl_present, growth_poly)
-    retreat_shoreline_change = create_shoreline_change_points(shl_present, retreat_poly)
+    accretion_shoreline_change = create_shoreline_change_points(shl_present, accretion_poly)
+    erosion_shoreline_change = create_shoreline_change_points(shl_present, erosion_poly)
     dlg.progressBar.setValue(40)
     # Export shoreline growth and retreat to GeoJSON
-    growth_shoreline_change.to_file(outputpath+'/growth_points.json', driver='GeoJSON')
-    retreat_shoreline_change.to_file(outputpath+'/retreat_points.json', driver='GeoJSON')
-    addMapLayer(outputpath+'/growth_points.json')
-    addMapLayer(outputpath+'/retreat_points.json')
+    accretion_shoreline_change.to_file(outputpath+'/accretion_points.json', driver='GeoJSON')
+    erosion_shoreline_change.to_file(outputpath+'/erosion_points.json', driver='GeoJSON')
+    addMapLayer(outputpath+'/accretion_points.json')
+    addMapLayer(outputpath+'/erosion_points.json')
     # Calculate total year
     # total_year = int(shoreline_fp[-1][-21:-17]) - int(shoreline_fp[0][-21:-17]) + 1
 
     # Create shoreline change
-    change_distance = merge_shoreline_change(growth_shoreline_change, retreat_shoreline_change)
+    change_distance = merge_shoreline_change(accretion_shoreline_change, erosion_shoreline_change)
     dlg.progressBar.setValue(80)
-    shoreline_change = retreat_shoreline_change.drop(columns=['change_m'])
+    shoreline_change = erosion_shoreline_change.drop(columns=['change_m'])
     shoreline_change['total change_m'] = change_distance
     shoreline_change['rate per year_m'] = (shoreline_change['total change_m']/total_years).round(2)
     # print(outputpath)
@@ -97,4 +97,5 @@ def shoreline_analysis(dlg):
 
     shoreline_change.to_file(outputpath+'/shorelineChange.json', driver='GeoJSON')
     addMapLayer(outputpath+'/shorelineChange.json')
+    dlg.progressBar.setValue(90)
     dlg.progressBar.setValue(100)

@@ -82,7 +82,6 @@ def download_image(dlg):
     lon = polygon_json.geometries().getInfo()[0]['coordinates'][0][0][0]
     lat = polygon_json.geometries().getInfo()[0]['coordinates'][0][0][1]
     epsg_code = "3857"
-    print(type(epsg_code))
     dlg.progressBar.setValue(10)
     # Split the geometry to small grid 
     grid = geemap.fishnet(polygon_json, h_interval=0.1, v_interval=0.1, delta=1)
