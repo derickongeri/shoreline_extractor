@@ -1,29 +1,50 @@
-import os
-import ee
-import glob
-# import shutil
-import requests
-import geemap
-import shutil
-import numpy as np
-# import natsort
-# import folium
-from .Plugin_download import waterMask_download
-import rasterio
-from rasterio.merge import merge
-from rasterio.features import shapes
-from shapely.ops import unary_union
-from .codes import shoreline
-# from rasterio.mask import mask
-from natsort import natsorted
-from pyproj import CRS
-import geopandas as gpd
-# import shapely
-from shapely.geometry import Polygon, MultiPolygon
-from shapely.geometry.polygon import LinearRing
-from qgis.core import QgsProject,QgsVectorLayer,QgsFeature,QgsGeometry,QgsPoint
+from .package_installer import install_packages
+try:
+    import os
+    import ee
+    import glob
+    import requests
+    import geemap
+    import shutil
+    import numpy as np
+    from .Plugin_download import waterMask_download, Sentinel_no_clouds
+    import rasterio
+    from rasterio.merge import merge
+    from rasterio.features import shapes
+    from shapely.ops import unary_union
+    from .codes import shoreline
+    # from rasterio.mask import mask
+    from natsort import natsorted
+    from pyproj import CRS
+    import geopandas as gpd
+    # import shapely
+    from shapely.geometry import Polygon, MultiPolygon
+    from shapely.geometry.polygon import LinearRing
+    from qgis.core import QgsProject,QgsVectorLayer,QgsRasterLayer,QgsFeature,QgsGeometry,QgsPoint
+except ImportError:
+    install_packages()
 import warnings
 warnings.filterwarnings("ignore")
+
+#Create a function to plot vector maps on the QGIS project
+def addMapLayer(path):
+    project = QgsProject.instance()
+    filename=path.split('/')[-1][0:-5]
+    layer=QgsVectorLayer(path,filename,'ogr')
+    if layer.isValid():
+        project.instance().addMapLayer(layer)
+    else:
+        print("Failed to load layer")
+
+#create a function to plot the raster maps on the QGIS project
+def addRasterLayer(path):
+    project=QgsProject.instance()
+    filename=path.split('/')[-1][0:-4]
+    layer=QgsRasterLayer(path,filename,'gdal')
+    if layer.isValid():
+        project.instance().addMapLayer(layer)
+    else:
+        print("Failed to load layer")
 
 def initialize():
     json_file="ee-brianchelloti-f3bf0b9227be.json"
@@ -47,6 +68,7 @@ def extract_SAR_Shoreline(dlg):
     # Define the working CRS
     epsg_code = "3857"
 
+    #Requires PyCRS
     dlg.progressBar.setValue(10)
     # Load the roi shapefile
     roi = geemap.shp_to_ee(bound.source())
@@ -57,8 +79,7 @@ def extract_SAR_Shoreline(dlg):
 
     # ------ Main Code Execution ------ #
     # Split the geometry to small grid 
-    # grid = geemap.fishnet(roi, h_interval=0.05, v_interval=0.05, delta=1)
-    grid = roi
+    grid = geemap.fishnet(roi, h_interval=0.05, v_interval=0.05, delta=1)
     gridList = grid.toList(grid.size())
     grid_num = grid.toList(grid.size()).length()
 
@@ -70,9 +91,12 @@ def extract_SAR_Shoreline(dlg):
 
     dlg.progressBar.setValue(20)
     # Create temporary folder
-    if not os.path.exists(output_folder+'/output/Tiles'): 
-        os.makedirs(output_folder+'/output/Tiles')
-        
+    if not os.path.exists(output_folder+'/output/Tiles/watermask'): 
+        os.makedirs(output_folder+'/output/Tiles/watermask')
+
+    if not os.path.exists(output_folder+'/output/Tiles/rgb/'): 
+        os.makedirs(output_folder+'/output/Tiles/rgb/')
+    dlg.progressBar.setValue(25)
     # 2. Define start date and end date
     date = [start_date, end_date]
 
@@ -87,73 +111,103 @@ def extract_SAR_Shoreline(dlg):
     end_mm = end_date[5:7]
     file_name = start_yyyy+start_mm+'_'+end_yyyy+end_mm
 
+    # Download SAR data
     #Download image by grid
+    #Download image by grid
+    BandIDs_watermask = ['waterMask']
+    BandIDs_rgb = ['VV', 'VH', 'VV-VH']
     for i in range(grid_num.getInfo()):
-        # Extract image from GEE and apply pre-process function
-        image = waterMask_download(roi, ls_feature[i], start_date, end_date)
+  # Extract image from GEE and apply pre-process function
+        image = waterMask_download(ls_feature[i], start_date, end_date)
 
-        BandIDs = ['waterMask']
         # Download pre-processed image
-        
-        download_id = ee.data.getDownloadId({
+        download_watermask = ee.data.getDownloadId({
             'image': image,
-            'bands': BandIDs,
+            'bands': BandIDs_watermask,
+            'region': ls_feature[i],
+            'scale': 10,
+            'format': 'GEO_TIFF',
+            'crs' : 'EPSG:'+str(epsg_code),
+        })
+        
+        response_watermask = requests.get(ee.data.makeDownloadUrl(download_watermask))
+        with open(output_folder+'/output/Tiles/watermask/image_grid_'+str(i)+'.tif', 'wb') as fd:
+            fd.write(response_watermask.content)
+        
+        # Download pre-processed image
+        download_rgb = ee.data.getDownloadId({
+            'image': image,
+            'bands': BandIDs_rgb,
             'region': ls_feature[i],
             'scale': 10,
             'format': 'GEO_TIFF',
             'crs' : 'EPSG:'+str(epsg_code),
         })
 
-        response = requests.get(ee.data.makeDownloadUrl(download_id))
-        with open(output_folder+'/output/Tiles/image_grid_'+str(i)+'.tif', 'wb') as fd:
-            fd.write(response.content)
+        response_rgb = requests.get(ee.data.makeDownloadUrl(download_rgb))
+        with open(output_folder+'/output/Tiles/rgb/image_grid_'+str(i)+'.tif', 'wb') as fd:
+            fd.write(response_rgb.content)
     dlg.progressBar.setValue(30)   
-        # ------ Merge all grid image to one image ------ #
+            # ------ Merge all grid image to one image ------ #
     # Make a search criteria to select the image files
-    q = os.path.join(output_folder+'/output/Tiles/image*.tif') 
+    watermask_infolder = output_folder+'/output/Tiles/watermask/image_grid_*.tif'
+    rgb_infolder = output_folder+'/output/Tiles/rgb/image_grid_*.tif'
 
-    # sorted files by name
-    fp = natsorted(glob.glob(q)) 
+    watermask_outfolder = os.path.join(output_folder+'/output/WaterMask/pre-processed-images'+'/WaterMask_'+file_name+'.tif')
+    rgb_outfolder = os.path.join(output_folder+'/s1rgb_'+file_name+'.tif')
 
-    # List for storing the raster image
-    src_files = []
-
-    # Open each raster files by iterating and then append to our list
-    for raster in fp:
-        # open raster file
-        files = rasterio.open(raster)
-
-        # add each file to our list
-        src_files.append(files)
-
-    # Merge function returns a single mosaic array and the transformation info
-    mosaic, out_trans = merge(src_files)
-    dlg.progressBar.setValue(40)
-    # Set metadata
-    out_meta = src_files[0].meta.copy()
-    out_meta.update({"driver": "GTiff",
-                    "dtype": "float32",
-                    "nodata": 0,
-                    "height": mosaic.shape[1],
-                    "width": mosaic.shape[2],
-                    "transform": out_trans,
-                    "count": 1,
-                    "crs": CRS.from_epsg(int(epsg_code))})
-                    
-    # Write the mosaic raster
-    output = os.path.join(output_folder+'/output/WaterMask/pre-processed-images'+'/WaterMask_'+file_name+'.tif')
-    with rasterio.open(output, "w", tiled=True, compress='lzw', **out_meta) as dest:
-        dest.write(mosaic.astype(np.float32))
+    def MergeGrids(in_folder,out_folder, bands):
+        
+        q = in_folder
+        # sorted files by name
+        fp = natsorted(glob.glob(q)) 
+        
+        # List for storing the raster image
+        src_files = []
+        
+        # Open each raster files by iterating and then append to our list
+        for raster in fp:
+            # open raster file
+            files = rasterio.open(raster)
+        
+            # add each file to our list
+            src_files.append(files)
+        
+        # Merge function returns a single mosaic array and the transformation info
+        mosaic, out_trans = merge(src_files)
+        
+        # Set metadata
+        out_meta = src_files[0].meta.copy()
+        out_meta.update({"driver": "GTiff",
+                        "dtype": "float32",
+                        "nodata": 0,
+                        "height": mosaic.shape[1],
+                        "width": mosaic.shape[2],
+                        "transform": out_trans,
+                        "count": bands,
+                        "crs": CRS.from_epsg(int(epsg_code))})
+                        
+        # Write the mosaic raster
+        # output = os.path.join('./output/'+folder+'/WaterMask/pre-processed-images'+'/WaterMask_'+file_name+'.tif')
+        output = out_folder
+        with rasterio.open(output, "w", tiled=True, compress='lzw', **out_meta) as dest:
+            dest.write(mosaic.astype(np.float32))
+        
+    MergeGrids(watermask_infolder, watermask_outfolder, 1)
+    dlg.progressBar.setValue(40)   
+    MergeGrids(rgb_infolder, rgb_outfolder, 3)
+    addRasterLayer(output_folder+'/s1rgb_'+file_name+'.tif')
     dlg.progressBar.setValue(50)   
+
         # Create folder
     if not os.path.exists(output_folder+'/output/WaterMask/post-processed-images'):
         os.makedirs(output_folder+'/output/WaterMask/post-processed-images')
-    if not os.path.exists(output_folder+'/output/shoreline/geojson'):
-        os.makedirs(output_folder+'/output/shoreline/geojson')
     
     # ------ Shoreline extraction ------ #
     # Read input image data
     Image = rasterio.open(output_folder+'/output/WaterMask/pre-processed-images'+'/WaterMask_'+file_name+'.tif')
+
+    print(Image.crs)
     if Image.read().any() == 0:
         print('Warning: The image is empty, so shoreline cannot be extracted.')
 
@@ -161,7 +215,7 @@ def extract_SAR_Shoreline(dlg):
         print('Extracting shoreline')
     
     rescale_image, transform = shoreline.resampling(image=Image, scale_factor=5)
-    dlg.progressBar.setValue(70)
+
     # Georeference
     horizontal_step = 0     # (+ Positive) Move to right // (- Negative) Move to left
     vertical_step = 0       # (+ Positive) Move to top // (- Negative) Move to bottom
@@ -197,7 +251,9 @@ def extract_SAR_Shoreline(dlg):
         new_row = np.empty((rescale_image.shape[0], abs(nrow), rescale_image.shape[2]))
         new_row.fill(np.nan)
         rescale_image = np.array([np.r_[rescale_image[i], new_row[i]] for i in range(rescale_image.shape[0])])
-    dlg.progressBar.setValue(80)
+
+
+    crs ='EPSG:3857'
     # Set metadata
     out_meta = Image.meta.copy()
     out_meta.update({"driver": "GTiff",
@@ -207,9 +263,10 @@ def extract_SAR_Shoreline(dlg):
                     "width": rescale_image.shape[2],
                     "transform": transform,
                     "count": 1,
-                    "crs": Image.crs
+                    "crs": crs#Image.crs
                     }
                     )
+    dlg.progressBar.setValue(60)   
     # Write the clip raster
     output = os.path.join(output_folder+'/output/WaterMask/post-processed-images/WaterMask_'+file_name+'.tif')
     with rasterio.open(output, "w",tiled=True, compress='lzw', **out_meta) as dest:
@@ -230,7 +287,7 @@ def extract_SAR_Shoreline(dlg):
 
     # Create new geodataframe
     geom_dataframe  = gpd.GeoDataFrame.from_features(geometry)
-
+    dlg.progressBar.setValue(70)   
     # Set projection of dataframe
     geom = geom_dataframe.set_crs(Image.crs)
 
@@ -246,7 +303,7 @@ def extract_SAR_Shoreline(dlg):
     list_poly = []
     for p in geom['geometry']:
         list_poly.append(Polygon(p.exterior))
-
+    dlg.progressBar.setValue(80)   
     smooth_poly = []
     for i in range(len(list_poly)):
         poly_line = list_poly[i]
@@ -262,7 +319,7 @@ def extract_SAR_Shoreline(dlg):
         else:
             ring = LinearRing(inbuffer2.exterior)
             smooth_poly.append(ring)
-    dlg.progressBar.setValue(90)
+    dlg.progressBar.setValue(90)   
     # Create new geodataframe for exterior boundaries
     geo_shoreline = gpd.GeoDataFrame({'geometry':smooth_poly}, crs=Image.crs)
     geo_shoreline = geo_shoreline.dropna().reset_index(drop=True)
@@ -271,6 +328,16 @@ def extract_SAR_Shoreline(dlg):
     # Save to geojson file
     outfp = output_folder+'/shoreline_'+file_name+'.json'
     geo_shoreline.to_file(outfp, driver='GeoJSON')
+    addMapLayer(outfp)
+    dlg.progressBar.setValue(100)   
 
-    # os.rmdir(output_folder+'/output')
-    dlg.progressBar.setValue(100)
+    # Disconnect file processing and Shut down temporary directory
+    # Close files
+    Image.close()
+    rescale_image.close()
+    del Image
+    del rescale_image
+    files = None
+    src_files = None
+    img_grid = None
+    shutil.rmtree(output_folder+'/output')

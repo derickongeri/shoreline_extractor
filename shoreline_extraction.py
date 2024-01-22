@@ -1,15 +1,19 @@
-import os
-# import cv2
-# import folium
-import numpy as np
-import pandas as pd
-from sklearn.cluster import KMeans
-import geopandas as gpd
-import shapely
-from shapely.geometry import Point, Polygon, MultiPolygon
-from shapely.geometry.polygon import LinearRing
-from shapely.ops import unary_union
-import rasterio
+from .package_installer import install_packages
+try:
+    import os
+    # import cv2
+    # import folium
+    import numpy as np
+    import pandas as pd
+    from sklearn.cluster import KMeans
+    import geopandas as gpd
+    import shapely
+    from shapely.geometry import Point, Polygon, MultiPolygon
+    from shapely.geometry.polygon import LinearRing
+    from shapely.ops import unary_union
+    import rasterio
+except ImportError:
+    install_packages()
 # from rasterio.plot import show
 from rasterio.features import shapes
 # from rasterio.enums import Resampling

@@ -1,22 +1,27 @@
-from qgis.core import QgsProject,QgsVectorLayer,QgsFeature,QgsGeometry,QgsPoint
-from qgis.PyQt.QtCore import QDate
-import json
-import os
-import io
-import ee
-import glob
-import shutil
-import requests
-import geemap
-import numpy as np
-import folium
-from .codes import download
-# from .parameters import aoi, date
-import rasterio
-from rasterio.merge import merge
-from rasterio.mask import mask
-from natsort import natsorted
-from pyproj import CRS
+from .package_installer import install_packages
+try:
+    from qgis.core import QgsProject,QgsVectorLayer,QgsFeature,QgsGeometry,QgsPoint
+    from qgis.PyQt.QtCore import QDate
+    import json
+    import os
+    import io
+    import ee
+    import glob
+    import shutil
+    import requests
+    import geemap
+    import numpy as np
+    import folium
+    from .codes import download
+    # from .parameters import aoi, date
+    import rasterio
+    from rasterio.merge import merge
+    from rasterio.mask import mask
+    from natsort import natsorted
+    from pyproj import CRS
+except ImportError:
+    install_packages()
+    
 import warnings
 warnings.filterwarnings("ignore")
 def initialize():
@@ -77,7 +82,6 @@ def download_image(dlg):
     lon = polygon_json.geometries().getInfo()[0]['coordinates'][0][0][0]
     lat = polygon_json.geometries().getInfo()[0]['coordinates'][0][0][1]
     epsg_code = "3857"
-    print(type(epsg_code))
     dlg.progressBar.setValue(10)
     # Split the geometry to small grid 
     grid = geemap.fishnet(polygon_json, h_interval=0.1, v_interval=0.1, delta=1)

@@ -104,7 +104,7 @@ class AutomaticShorelineExtraction:
             try:
                 # Get the path to the bundled requirements.txt file
                 # requirements_file_path = os.path.join(self.plugin_dir, 'requirements.txt')
-
+                
                 #list of packages to install
                 packages_to_install = ['folium', 'rasterio', 'rtree', 'pandas', 'geopandas', 'geemap', 'mapclassify', 'contextily', 'matplotlib_scalebar', 'opencv-python', 'natsort', 'scikit-learn']
 
@@ -303,14 +303,12 @@ class AutomaticShorelineExtraction:
                 geojson_layers = [layer for layer in layers if layer.type() == QgsMapLayerType.VectorLayer and layer.dataProvider().name()=='ogr']
                 self.dlg.baselineShorelineComboBox.addItems([layer.name() for layer in geojson_layers])
                 self.dlg.comparisonShorelineComboBox.addItems([layer.name() for layer in geojson_layers])
-                self.dlg.BoundComboBox.addItems([layer.name() for layer in geojson_layers])
                 self.dlg.BoundComboBoxSAR.addItems([layer.name() for layer in geojson_layers])
                 layer_list=geojson_layers
             elif current_tab_name == "Shoreline Extraction (SAR Sentinel-1)":
                 geojson_layers = [layer for layer in layers if layer.type() == QgsMapLayerType.VectorLayer and layer.dataProvider().name()=='ogr']
                 self.dlg.baselineShorelineComboBox.addItems([layer.name() for layer in geojson_layers])
                 self.dlg.comparisonShorelineComboBox.addItems([layer.name() for layer in geojson_layers])
-                self.dlg.BoundComboBox.addItems([layer.name() for layer in geojson_layers])
                 self.dlg.BoundComboBoxSAR.addItems([layer.name() for layer in geojson_layers])
             return layer_list
     
@@ -344,19 +342,19 @@ class AutomaticShorelineExtraction:
             self.dlg = AutomaticShorelineExtractionDialog()
             self.dlg.button_box.accepted.disconnect()
             self.dlg.button_box.accepted.connect(self.process)
-            self.dlg.browseOutputFolder.clicked.connect(self.select_output_folder)
-            self.dlg.inputRasterASECombobox.currentIndexChanged.connect(lambda: self.getBandCount())
+            # self.dlg.browseOutputFolder.clicked.connect(self.select_output_folder)
+            # self.dlg.inputRasterASECombobox.currentIndexChanged.connect(lambda: self.getBandCount())
             self.dlg.shorelineChange.currentChanged.connect(self.getLayers)
             self.dlg.openFolder_2.clicked.connect(self.select_output_folder)
-            self.dlg.browseOutputDownload.clicked.connect(self.select_output_folder)
+            # self.dlg.browseOutputDownload.clicked.connect(self.select_output_folder)
             self.dlg.browseOutputSAR.clicked.connect(self.select_output_folder)
             # QgsProject.instance().layerWillBeRemoved.connect(self.getLayers)
             QgsProject.instance().layerLoaded.connect(self.getLayers)
         
-        shorelineChangeType=['growth','retreat']
+        shorelineChangeType=['accresion','erosion']
         # # Clear the contents of the comboBox from previous runs
-        self.dlg.inputRasterASECombobox.clear()
-        self.dlg.rasterBandASEComboBox.clear()
+        # self.dlg.inputRasterASECombobox.clear()
+        # self.dlg.rasterBandASEComboBox.clear()
         # self.dlg.changeTypeComboBox.clear()
         # self.dlg.changeTypeComboBox.addItems([item for item in shorelineChangeType])
 
