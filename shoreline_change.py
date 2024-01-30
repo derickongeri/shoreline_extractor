@@ -58,7 +58,7 @@ def shoreline_analysis(dlg):
     
    
     erosion = gpd.overlay(shl_past, shl_present, how='difference', keep_geom_type=False)
-    erosion.to_file(outputpath+'erosion.json', driver='GeoJSON')
+    erosion.to_file(outputpath+'/erosion.json', driver='GeoJSON')
     addMapLayer(outputpath+'/erosion.json')
     
     accretion = gpd.overlay(shl_present, shl_past, how='difference', keep_geom_type=False)
